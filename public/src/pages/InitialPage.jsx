@@ -1,89 +1,81 @@
-import styled from "styled-components";
+import { focusedStyle, acceptStyle, rejectStyle, FormContainer, baseStyle } from "./style";
+import React, { useMemo } from 'react';
+import { useDropzone } from 'react-dropzone'
 import Logo from "../assets/Logotipo_do_Supremo_Tribunal_Federal.svg";
+import axios from "axios"
+import { scrappingRoute } from "../utils/APIRoutes";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Pages() {
+
+    const toastOptions = {
+        position: "bottom-right",
+        autoClose: 8000,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "dark",
+    }
+
+    const {
+        getRootProps,
+        getInputProps,
+        isFocused,
+        isDragAccept,
+        isDragReject
+    } = useDropzone({
+        accept: {
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                : ['.xlsx']
+        },
+        onDrop: (acceptedFiles) => {
+            if (acceptedFiles.length > 0) {
+                console.log('test')
+            }
+        }
+    });
+
+    const style = useMemo(() => ({
+        ...baseStyle,
+        ...(isFocused ? focusedStyle : {}),
+        ...(isDragAccept ? acceptStyle : {}),
+        ...(isDragReject ? rejectStyle : {})
+    }), [
+        isFocused,
+        isDragAccept,
+        isDragReject
+    ]);
+
+    const handleSubmit = async (event) => {
+        event.preventDefault()
+        const data = await axios.get(scrappingRoute);
+        console.log(data)
+        if (data.status) {
+            console.log('entrei papi')
+            toast.success('Seu Excel foi baixado', toastOptions)
+        } else {
+            toast.error('Erro ao baixar seu Excel, favor contatar TI', toastOptions)
+        }
+    }
+
 
     return (
         <div>
             <FormContainer>
-                <form >
-                    <div className='brand'>
+                <form onSubmit={(event) => handleSubmit(event)}>
+                    <div className="brand">
                         <img src={Logo} alt="Logo" />
                     </div>
-                    <button type="submit">BAIXAR</button>
+                    <button>Baixar Último Excel</button>
+                    <div {...getRootProps({ style })}>
+                        <input {...getInputProps()} />
+                        <p>Arraste algum arquivo aqui, ou clique para selecionar arquivo</p>
+                    </div>
                 </form>
-            </FormContainer >
-        </div>
+            </FormContainer>
+            <ToastContainer />
+        </div >
     );
 }
-
-const FormContainer = styled.div`
-  height: 100vh;
-    width: 100vw;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 1rem;
-    align-items: center;
-    background-color: #131324;
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      justify-content: center;
-      img {
-        height: 5rem;
-      }
-      h1 {
-        color: white;
-        text-transform: uppercase;
-      }
-    }
-  
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-      background-color: #00000076;
-      border-radius: 2rem;
-      padding: 3rem 5rem;
-    }
-    input {
-      background-color: transparent;
-      padding: 1rem;
-      border: 0.1rem solid #4e0eff;
-      border-radius: 0.4rem;
-      color: white;
-      width: 100%;
-      font-size: 1rem;
-      &:focus {
-        border: 0.1rem solid #997af0;
-        outline: none;
-      }
-    }
-    button {
-      background-color: #4e0eff;
-      color: white;
-      padding: 1rem 2rem;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 0.4rem;
-      font-size: 1rem;
-      text-transform: uppercase;
-      &:hover {
-        background-color: #4e0eff;
-      }
-    }
-    span {
-      color: white;
-      text-transform: uppercase;
-      a {
-        color: #4e0eff;
-        text-decoration: none;
-        font-weight: bold;
-      }
-    }
-  `;
 
 export default Pages;

@@ -11,7 +11,7 @@ namespace server.Controllers
     public class ExcelController : Controller
     {
         [HttpGet("download")]
-        public IActionResult BaixarEAbrirExcel()
+        public IActionResult BaixarExcel()
         {
             DateTime date = DateTime.Now;
             string url = "https://www.stf.jus.br/arquivo/cms/informativoSTF/anexo/Informativo_Dados/Dados_InformativosSTF.xlsx"; // Substitua pelo link real
@@ -28,11 +28,11 @@ namespace server.Controllers
                     client.DownloadFile(url, caminhoSalvamento);
                 }
 
-                return Ok("Arquivo Excel baixado e aberto com sucesso!");
+                return Ok(new { status = true });
             }
             catch (Exception ex)
             {
-                return BadRequest($"Erro: {ex.Message}");
+                return BadRequest(new { status = false });
             }
         }
     }
